@@ -92,8 +92,8 @@ check_createtables() {
   fi
   
   cd $SPARK_HOME
-  DRIVER_OPTIONS="--driver-memory 4g --driver-java-options -Dlog4j.configuration=file:///${output_dir}/log4j.properties"
-  EXECUTOR_OPTIONS="--executor-memory 2g --conf spark.executor.extraJavaOptions=-Dlog4j.configuration=file:///${output_dir}/log4j.properties"
+  DRIVER_OPTIONS="--driver-memory 5g --driver-java-options -Dlog4j.configuration=file:///${output_dir}/log4j.properties"
+  EXECUTOR_OPTIONS="--executor-memory 6g --conf spark.executor.extraJavaOptions=-Dlog4j.configuration=file:///${output_dir}/log4j.properties"
   logInfo "Checking pre-reqs for running TPC-DS queries. May take a few seconds.."
   bin/spark-sql ${DRIVER_OPTIONS} ${EXECUTOR_OPTIONS} --conf spark.sql.catalogImplementation=hive -f ${TPCDS_WORK_DIR}/row_counts.sql > ${TPCDS_WORK_DIR}/rowcounts.out 2>&1
   cat ${TPCDS_WORK_DIR}/rowcounts.out | grep -v "Time" | grep -v "SLF4J" >> ${TPCDS_WORK_DIR}/rowcounts.rrn
@@ -334,8 +334,8 @@ function create_spark_tables {
   if [ "$result" -ne 1 ]; then 
     current_dir=`pwd`
     cd $SPARK_HOME
-    DRIVER_OPTIONS="--driver-java-options -Dlog4j.configuration=file:///${output_dir}/log4j.properties"
-    EXECUTOR_OPTIONS="--conf spark.executor.extraJavaOptions=-Dlog4j.configuration=file:///${output_dir}/log4j.properties"
+    DRIVER_OPTIONS="--driver-memory 5g --driver-java-options -Dlog4j.configuration=file:///${output_dir}/log4j.properties"
+    EXECUTOR_OPTIONS="--executor-memory 6g --conf spark.executor.extraJavaOptions=-Dlog4j.configuration=file:///${output_dir}/log4j.properties"
     logInfo "Creating tables. Will take a few minutes ..."
     ProgressBar 2 122
     bin/spark-sql ${DRIVER_OPTIONS} ${EXECUTOR_OPTIONS} --conf spark.sql.catalogImplementation=hive -f ${TPCDS_WORK_DIR}/create_database.sql > ${TPCDS_WORK_DIR}/create_database.out 2>&1
