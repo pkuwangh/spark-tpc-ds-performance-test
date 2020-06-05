@@ -1,5 +1,9 @@
 #!/bin/bash 
 
+echo "================================================================"
+echo "runqueries"
+echo "================================================================"
+
 SPARK_HOME=$1
 OUTPUT_DIR=$2
 DRIVER_OPTIONS="--driver-memory 4g --driver-java-options -Dlog4j.configuration=file:///${OUTPUT_DIR}/log4j.properties"

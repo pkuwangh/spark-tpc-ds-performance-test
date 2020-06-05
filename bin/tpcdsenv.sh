@@ -3,6 +3,9 @@
 # tpcdsenv.sh - UNIX Environment Setup
 #
 
+echo "================================================================"
+echo "Setup env from tpcdsenv.sh"
+echo "================================================================"
 #######################################################################
 # This is a mandatory parameter. Please provide the location of
 # spark installation.

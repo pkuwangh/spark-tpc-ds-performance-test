@@ -1,6 +1,7 @@
 #!/bin/bash 
 
 killtree() {
+  echo "================ killtree ================"
   local parent=$1 child
   for child in $(ps -o ppid= -o pid= | awk "\$1==$parent {print \$2}"); do
     killtree $child
@@ -9,6 +10,7 @@ killtree() {
 }
 
 handle_shutdown() {
+  echo "================ handle shutdown ================"
   killtree $1
   cleanup $2
   echo ""
@@ -16,11 +18,13 @@ handle_shutdown() {
 }
 
 handle_shutdown1() {
+  echo "================ handle shutdown1 ================"
   echo "Script was terminated abnormally. Finished cleaning up.. "
   exit 1
 }
 
 cleanup() {
+  echo "================ cleanup ================"
   if [ -n "$1" ]; then
     rm -rf $1/*.log
     rm -rf $1/*.txt
@@ -37,6 +41,7 @@ cleanup() {
 }
 
 validate_querynum() {
+ echo "================ validate_querynum ================"
  re='^[0-9]+$'
  if ! [[ $1 =~ $re ]] ; then
    return 1
@@ -48,12 +53,17 @@ validate_querynum() {
 }
 
 cleanup_all() {
+  echo "================ cleanup all ================"
+  echo $TPCDS_WORK_DIR
+  echo $TPCDS_LOG_DIR
   cleanup $TPCDS_WORK_DIR
   cleanup $TPCDS_LOG_DIR
   logInfo "Cleanup successful.."
 }
 
 check_compile() {
+ echo "================ check compile ================"
+ echo $TPCDS_ROOT_DIR
  if [ ! -f $TPCDS_ROOT_DIR/src/toolkit/tools/dsdgen ]; then
    logError "Toolkit has not been compiled. Please complete option 1"
    echo     "before continuing with the currently selected option."
@@ -68,6 +78,8 @@ check_compile() {
 }
 
 check_gendata() {
+ echo "================ check gendata ================"
+ echo $TPCDS_GENDATA_DIR
  num_datafiles=`find $TPCDS_GENDATA_DIR -name *.dat | wc -l`
  if [ "$num_datafiles" -lt 24 ]; then 
   logError "TPC-DS data files have not been generated. Please complete option 2"
@@ -77,6 +89,8 @@ check_gendata() {
 }
 
 check_genqueries() {
+ echo "================ check genqueries ================"
+ echo $TPCDS_GENQUERIES_DIR
  num_queries=`find $TPCDS_GENQUERIES_DIR -name *.sql | wc -l`
  if [ "$num_queries" -lt 99 ]; then 
   logError "TPC-DS queries have not been generated. Please complete option 4"
@@ -86,12 +100,15 @@ check_genqueries() {
 }
 
 check_createtables() {
+  echo "================ check createtables ================"
+  echo $SPARK_HOME
   result=$?
   if [ "$result" -ne 0 ]; then
     return 1 
   fi
   
   cd $SPARK_HOME
+  echo ${output_dir}
   DRIVER_OPTIONS="--driver-memory 5g --driver-java-options -Dlog4j.configuration=file:///${output_dir}/log4j.properties"
   EXECUTOR_OPTIONS="--executor-memory 6g --conf spark.executor.extraJavaOptions=-Dlog4j.configuration=file:///${output_dir}/log4j.properties"
   logInfo "Checking pre-reqs for running TPC-DS queries. May take a few seconds.."
@@ -108,10 +125,12 @@ check_createtables() {
     echo     "is run before continuing with currently selected option"
     return 1
   fi
+  echo "$pwd"
 }
 
 check_prereq() {
   option=$1
+  echo "================ check prereq ================"
   case $option in
     "2")
         check_createtables;;
@@ -130,6 +149,16 @@ logError() {
 }
 
 set_environment() {
+  echo "================ set environment ================"
+  echo $bin_dir
+  echo $script_dir
+  echo $TPCDS_ROOT_DIR
+  echo $TPCDS_LOG_DIR
+  echo $TPCDS_DBNAME
+  echo $TPCDS_GENDATA_DIR
+  echo $TPCDS_GENQUERIES_DIR
+  echo $TPCDS_WORK_DIR
+
   bin_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
   script_dir="$(dirname "$bin_dir")"
   
@@ -154,6 +183,7 @@ set_environment() {
 }
 
 check_environment() {
+ echo "================ check environment ================"
  if [ -z "$SPARK_HOME" ]; then
     logError "SPARK_HOME is not set. Please make sure the following conditions are met."
     logError "1. Set SPARK_HOME in ${TPCDS_ROOT_DIR}/bin/tpcdsenv.sh and make sure"
@@ -165,6 +195,7 @@ check_environment() {
 }
 
 template(){
+    echo "================ template ================"
     # usage: template file.tpl
     while read -r line ; do
             line=${line//\"/\\\"}
@@ -176,6 +207,7 @@ template(){
 }
 
 function ProgressBar {
+  echo "================ progress bar ================"
   # Process data
     let _progress=(${1}*100/${2}*100)/100
     let _done=(${_progress}*4)/10
@@ -191,6 +223,7 @@ function ProgressBar {
 }
 
 function platformCheck {
+  echo "================ platform check ================"
   local osType="UNKNOWN"
   unameOut="$(uname -s)"
   case "${unameOut}" in
@@ -203,6 +236,7 @@ function platformCheck {
 }
 
 function run_tpcds_common {
+  echo "================ run tpcds common ================"
   output_dir=$TPCDS_WORK_DIR
   cp ${TPCDS_GENQUERIES_DIR}/*.sql $TPCDS_WORK_DIR
 
@@ -238,6 +272,7 @@ function run_tpcds_common {
 }
 
 function run_subset_tpcds_queries {
+  echo "================ run subset tpcds queries ================"
   output_dir=$TPCDS_WORK_DIR
   cleanup $TPCDS_WORK_DIR
   echo "Enter a comma separated list of queries to run (ex: 1, 2), followed by [ENTER]:"
@@ -280,6 +315,7 @@ function run_subset_tpcds_queries {
 }
 
 function run_tpcds_queries {
+  echo "================ run tpcds queries ================"
   output_dir=$TPCDS_WORK_DIR
   cleanup $TPCDS_WORK_DIR
   touch ${TPCDS_WORK_DIR}/runlist.txt
@@ -308,6 +344,7 @@ function run_tpcds_queries {
 }
 
 function create_spark_tables {
+  echo "================ create spark tables ================"
   check_environment
   output_dir=$TPCDS_WORK_DIR
   cleanup $TPCDS_WORK_DIR
@@ -376,6 +413,7 @@ function create_spark_tables {
 }
 
 set_env() {
+  echo "================ set env ================"
   # read -n1 -s
   TEST_ROOT=`pwd`
   set_environment
